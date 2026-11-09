@@ -1,76 +1,53 @@
-
-
-
-
 import admin from "firebase-admin";
-
-import {
-  readFileSync,
-} from "fs";
-
-import {
-  resolve,
-  dirname,
-} from "path";
-
-import {
-  fileURLToPath,
-} from "url";
-
-// ============================================================
-// PATH
-// ============================================================
+import { readFileSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// ============================================================
-// INITIALIZE FIREBASE
-// ============================================================
-
 const initFirebase = () => {
-  // Already initialized
+  // Prevent duplicate initialization
   if (admin.apps.length > 0) {
     return admin.apps[0];
   }
 
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
   let serviceAccount;
 
-  // ==========================================================
-  // RAILWAY / PRODUCTION
-  // ==========================================================
-
-  if (process.env.FIREBASE_PROJECT_ID &&
-      process.env.FIREBASE_CLIENT_EMAIL &&
-      process.env.FIREBASE_PRIVATE_KEY) {
-
-    console.log("Initializing Firebase using environment variables...");
+  // Railway / Production
+  if (projectId && clientEmail && privateKey) {
+    console.log("Initializing Firebase using Railway variables...");
 
     serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(
-        /\\n/g,
-        "\n"
-      ),
+      projectId,
+      clientEmail,
+      privateKey: privateKey.replace(/\\n/g, "\n"),
     };
-  }
+  } else {
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      Boolean(process.env.RAILWAY_ENVIRONMENT_NAME);
 
-  // ==========================================================
-  // LOCAL DEVELOPMENT
-  // ==========================================================
+    if (isProduction) {
+      console.error("Firebase environment variable check:", {
+        projectId: Boolean(projectId),
+        clientEmail: Boolean(clientEmail),
+        privateKey: Boolean(privateKey),
+      });
 
-  else {
+      throw new Error(
+        "Firebase credentials missing in Railway. " +
+        "Configure FIREBASE_PROJECT_ID, " +
+        "FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY."
+      );
+    }
 
-    console.log(
-      "Firebase environment variables not found."
-    );
-
-    console.log(
-      "Trying local serviceAccountKey.json..."
-    );
+    // Local development only
+    console.log("Loading local Firebase service account...");
 
     const keyPath = resolve(
       __dirname,
@@ -78,64 +55,27 @@ const initFirebase = () => {
     );
 
     try {
-
       serviceAccount = JSON.parse(
-        readFileSync(
-          keyPath,
-          "utf-8"
-        )
+        readFileSync(keyPath, "utf8")
       );
-
     } catch (error) {
-
-      console.error(
-        "Firebase service account error:",
-        error
-      );
-
-      throw new Error(
-        `Cannot initialize Firebase.
-
-For Railway:
-Set FIREBASE_PROJECT_ID,
-FIREBASE_CLIENT_EMAIL,
-and FIREBASE_PRIVATE_KEY.
-
-For local development:
-Make sure serviceAccountKey.json exists at:
-${keyPath}`
-      );
+      console.error("Local Firebase credentials error:", error.message);
+      throw new Error("Cannot load local Firebase serviceAccountKey.json");
     }
   }
 
-  // ==========================================================
-  // INITIALIZE FIREBASE ADMIN
-  // ==========================================================
-
   admin.initializeApp({
-    credential:
-      admin.credential.cert(
-        serviceAccount
-      ),
+    credential: admin.credential.cert(serviceAccount),
   });
 
-  console.log(
-    "Firebase Admin SDK initialized"
-  );
+  console.log("Firebase Admin SDK initialized successfully");
 
   return admin.apps[0];
 };
 
-// ============================================================
-// INIT
-// ============================================================
-
+// Initialize Firebase
 initFirebase();
 
-// ============================================================
-// EXPORT
-// ============================================================
-
+// Exports
 export const auth = admin.auth();
-
 export default admin;
