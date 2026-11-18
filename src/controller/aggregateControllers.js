@@ -20,6 +20,8 @@
 import { getPrismaClient } from "../prisma.js";
 
 const prisma = getPrismaClient("pg");
+import service from "../services/pgservices.js";
+import getDB from "../utils/dbResolver.js";
 
 
 // ============================================================
@@ -18318,4 +18320,76 @@ export const getResidentProfileSupport = async (req, res) => {
   }
 
 };
+
+
+
+
+export const getAllRecordsByTableName = async (req, res) => {
+  try {
+    const { tablename } = req.query;
+
+    // Validate table name
+    if (!tablename || typeof tablename !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "tablename query parameter is required",
+        result: []
+      });
+    }
+
+    const tableName = tablename.trim();
+
+    if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(tableName)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid table name",
+        result: []
+      });
+    }
+
+    const prisma = getDB("pg");
+
+    // Validate that the requested model exists in Prisma
+    if (!prisma[tableName]) {
+      return res.status(404).json({
+        success: false,
+        message: `Table/model '${tableName}' not found`,
+        result: []
+      });
+    }
+
+    // Remove tablename before passing query to getRecords.
+    // getRecords validates all remaining query parameters.
+    const serviceReq = {
+      ...req,
+      query: { ...req.query }
+    };
+
+    delete serviceReq.query.tablename;
+
+    // Reuse your existing dynamic getRecords function
+    const result = await service.getRecords(
+      "pg",
+      tableName,
+      serviceReq,
+      {
+        page: 1,
+        limit: 100
+      },
+      prisma
+    );
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Dynamic getAllRecords Error:", error);
+
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Failed to fetch records",
+      result: []
+    });
+  }
+};
+
 

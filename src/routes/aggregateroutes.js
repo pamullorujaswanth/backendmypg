@@ -5,7 +5,9 @@ import {
 getIssuesAndResidentHappiness,getServiceRequestDetails,
 getTodayDashboardTasksformanager,getCheckInCheckoutAggregate,
 getResidentHome,getResidentMyStay,getMyServiceRequests,getResidentRentStatus
-,updateCheckInCheckoutStatus ,getResidentProfileSupport,getAnnouncementsController
+,updateCheckInCheckoutStatus ,getResidentProfileSupport,getAnnouncementsController,
+
+getAllRecordsByTableName 
 
 } from "../controller/aggregateControllers.js";
 
@@ -33,6 +35,13 @@ router.get(
 router.get(
   "/owner/getbedmaps/getAllRecords",
    getBedMap
+ 
+  
+);
+
+router.get(
+  "/tablename/getAllRecords",
+   getAllRecordsByTableName 
  
   
 );
