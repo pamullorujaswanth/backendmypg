@@ -192,7 +192,7 @@ model dy_pg_guest_info {
   perm_address           String?                @db.VarChar(45)
   pg_id                  Int?
   user_id                Int?
-  emergency_contact      String?                @db.VarChar(45)
+  emergency_contact      String?                @map("emergency-contact") @db.VarChar(45)
   emergency_contact_name String?                @db.VarChar(45)
   dy_pg_bookings         dy_pg_bookings[]
   st_pg_cur_sts          st_pg_cur_sts?         @relation(fields: [guest_status], references: [id], onDelete: Cascade, map: "fk_guest_status")
@@ -327,7 +327,7 @@ model dy_pg_srv_reqs {
   service_category                                    Int?
   service_status                                      Int?
   pg_id                                               Int?
-  feedback_summary                                    String?                 @db.VarChar(45)
+  feedback_summary                                    String?                 @db.VarChar(200)
   dy_user_dy_pg_srv_reqs_request_assigned_toTody_user dy_user?                @relation("dy_pg_srv_reqs_request_assigned_toTody_user", fields: [request_assigned_to], references: [id], onDelete: Cascade, map: "fk_srv_new_assignee")
   st_pg_srv_cat                                       st_pg_srv_cat?          @relation(fields: [service_category], references: [id], onDelete: Cascade, map: "fk_srv_new_category")
   st_pg_experience_score                              st_pg_experience_score? @relation(fields: [feedback], references: [id], onDelete: Cascade, map: "fk_srv_new_feedback")
@@ -348,7 +348,7 @@ model dy_pg_survey_results {
   guest_id               Int?
   survey_item_id         Int?
   experience_score       Int?
-  addl_info              String?                 @db.VarChar(100)
+  feedback_summary       String?                 @db.VarChar(200)
   survey_date            DateTime?               @db.DateTime(0)
   dy_pg_guest_info       dy_pg_guest_info?       @relation(fields: [guest_id], references: [id], onDelete: Cascade, map: "fk_pg_survey_new_guest")
   st_pg_survey_items     st_pg_survey_items?     @relation(fields: [survey_item_id], references: [id], onDelete: Cascade, map: "fk_pg_survey_new_item")
@@ -381,42 +381,38 @@ model dy_receipts {
 }
 
 model dy_user {
-  id                                                         Int                   @id @default(autoincrement())
-  univ_user_id                                               String?               @unique(map: "univ_user_id_UNIQUE") @db.VarChar(70)
-  first_name                                                 String?               @db.VarChar(45)
-  last_name                                                  String?               @db.VarChar(45)
-  email_id                                                   String?               @db.VarChar(45)
-  mobile_no                                                  String?               @db.VarChar(15)
-  ref_code                                                   String?               @db.VarChar(10)
-  mobile_verified                                            Int?                  @db.TinyInt
-  email_verified                                             Int?                  @db.TinyInt
-  passwd                                                     String?               @db.VarChar(512)
-  signuptime                                                 DateTime?             @db.Timestamp(0)
+  id                                                         Int                @id @default(autoincrement())
+  univ_user_id                                               String?            @unique(map: "univ_user_id_UNIQUE") @db.VarChar(70)
+  first_name                                                 String?            @db.VarChar(45)
+  last_name                                                  String?            @db.VarChar(45)
+  email_id                                                   String?            @db.VarChar(45)
+  mobile_no                                                  String?            @db.VarChar(15)
+  ref_code                                                   String?            @db.VarChar(10)
+  mobile_verified                                            Int?               @db.TinyInt
+  email_verified                                             Int?               @db.TinyInt
+  passwd                                                     String?            @db.VarChar(512)
+  signuptime                                                 DateTime?          @db.Timestamp(0)
   gender_id                                                  Int?
-  last_updated                                               DateTime?             @db.Timestamp(0)
-  customer_id                                                String?               @db.VarChar(45)
-  is_active                                                  Int?
-  rstatus                                                    Int?                  @db.TinyInt
+  last_updated                                               DateTime?          @db.Timestamp(0)
+  customer_id                                                String?            @db.VarChar(45)
+  is_active                                                  Int?               @db.TinyInt
+  rstatus                                                    Int?               @db.TinyInt
   project_category                                           Int?
   dy_invoices                                                dy_invoices[]
   dy_pg_alerts                                               dy_pg_alerts[]
-  dy_pg_bookings_dy_pg_bookings_created_byTody_user          dy_pg_bookings[]      @relation("dy_pg_bookings_created_byTody_user")
-  dy_pg_bookings_dy_pg_bookings_modified_byTody_user         dy_pg_bookings[]      @relation("dy_pg_bookings_modified_byTody_user")
+  dy_pg_bookings_dy_pg_bookings_created_byTody_user          dy_pg_bookings[]   @relation("dy_pg_bookings_created_byTody_user")
+  dy_pg_bookings_dy_pg_bookings_modified_byTody_user         dy_pg_bookings[]   @relation("dy_pg_bookings_modified_byTody_user")
   dy_pg_guest_info                                           dy_pg_guest_info[]
   dy_pg_info                                                 dy_pg_info[]
   dy_pg_kyc_info                                             dy_pg_kyc_info[]
   dy_pg_requests                                             dy_pg_requests[]
-  dy_pg_srv_reqs_dy_pg_srv_reqs_request_assigned_toTody_user dy_pg_srv_reqs[]      @relation("dy_pg_srv_reqs_request_assigned_toTody_user")
-  dy_pg_srv_reqs_dy_pg_srv_reqs_requestor_infoTody_user      dy_pg_srv_reqs[]      @relation("dy_pg_srv_reqs_requestor_infoTody_user")
+  dy_pg_srv_reqs_dy_pg_srv_reqs_request_assigned_toTody_user dy_pg_srv_reqs[]   @relation("dy_pg_srv_reqs_request_assigned_toTody_user")
+  dy_pg_srv_reqs_dy_pg_srv_reqs_requestor_infoTody_user      dy_pg_srv_reqs[]   @relation("dy_pg_srv_reqs_requestor_infoTody_user")
   dy_pg_usr_map                                              dy_pg_usr_map[]
-  st_pg_cur_sts                                              st_pg_cur_sts?        @relation(fields: [is_active], references: [id], onDelete: Cascade, map: "fk_active")
-  st_pg_gen                                                  st_pg_gen?            @relation(fields: [gender_id], references: [id], onDelete: Cascade, map: "fk_gender")
-  dy_user_invitations                                        dy_user_invitations[]
   dy_user_profile                                            dy_user_profile[]
   dy_user_roles                                              dy_user_roles[]
 
   @@index([gender_id], map: "fk_gen_id_idx")
-  @@index([is_active], map: "fk_active_idx")
 }
 
 model dy_user_profile {
@@ -514,8 +510,6 @@ model st_pg_cur_sts {
   dy_pg_rbac_permissions dy_pg_rbac_permissions[]
   dy_pg_requests         dy_pg_requests[]
   dy_pg_srv_reqs         dy_pg_srv_reqs[]
-  dy_user                dy_user[]
-  dy_user_invitations    dy_user_invitations[]
 }
 
 model st_pg_description {
@@ -541,9 +535,8 @@ model st_pg_floors {
 }
 
 model st_pg_gen {
-  id          Int       @id @default(autoincrement())
-  gender_type String?   @db.VarChar(20)
-  dy_user     dy_user[]
+  id          Int     @id @default(autoincrement())
+  gender_type String? @db.VarChar(20)
 }
 
 model st_pg_gst_typ {
@@ -679,32 +672,4 @@ model st_pg_role_permissions {
 
   @@index([permission_id], map: "fk_permis_idx")
   @@index([role_id], map: "fk_role_idx")
-}
-
-model dy_user_invitations {
-  id                    Int           @id @default(autoincrement())
-  user_id               Int
-  email_id              String        @db.VarChar(100)
-  invitation_token_hash String        @unique(map: "uk_invitation_token_hash") @db.VarChar(128)
-  status                Int           @default(31)
-  send_count            Int           @default(0)
-  max_send_count        Int           @default(3)
-  next_send_at          DateTime?     @db.DateTime(0)
-  expires_at            DateTime      @db.DateTime(0)
-  first_sent_at         DateTime?     @db.DateTime(0)
-  last_sent_at          DateTime?     @db.DateTime(0)
-  accepted_at           DateTime?     @db.DateTime(0)
-  declined_at           DateTime?     @db.DateTime(0)
-  revoked_at            DateTime?     @db.DateTime(0)
-  expired_at            DateTime?     @db.DateTime(0)
-  decline_note          String?       @db.Text
-  send_error            String?       @db.Text
-  created_at            DateTime      @default(now()) @db.DateTime(0)
-  updated_at            DateTime      @default(now()) @db.DateTime(0)
-  st_pg_cur_sts         st_pg_cur_sts @relation(fields: [status], references: [id], map: "fk_invitation_status")
-  dy_user               dy_user       @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_invitation_user")
-
-  @@index([next_send_at], map: "idx_invitation_next_send")
-  @@index([status], map: "idx_invitation_status")
-  @@index([user_id], map: "idx_invitation_user_id")
 }
