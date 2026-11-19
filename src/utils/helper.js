@@ -2351,9 +2351,7 @@ if (modelName === "dy_payments_info") {
 
       ...data,
 
-      bkg_no:
-        bkg_no,
-         bkg_status: data.bkg_status ?? 4,
+       bkg_status: data.bkg_status ?? 4,
 
       create_time:
         new Date(),
