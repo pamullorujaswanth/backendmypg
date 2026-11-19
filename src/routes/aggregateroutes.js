@@ -7,6 +7,8 @@ getTodayDashboardTasksformanager,getCheckInCheckoutAggregate,
 getResidentHome,getResidentMyStay,getMyServiceRequests,getResidentRentStatus
 ,updateCheckInCheckoutStatus ,getResidentProfileSupport,getAnnouncementsController
 
+
+
 } from "../controller/aggregateControllers.js";
 
 
