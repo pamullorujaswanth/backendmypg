@@ -21,11 +21,11 @@ class S3Service {
 constructor() {
   
 
-this.bucketName = process.env.AWSS3_BUCKET_NAME;
+// this.bucketName = process.env.AWSS3_BUCKET_NAME;
 
-  if (!this.bucketName) {
-    throw new Error("❌ Bucket name missing in ENV");
-  }
+//   if (!this.bucketName) {
+//     throw new Error("❌ Bucket name missing in ENV");
+//   }
 
   this.s3 = new S3Client({
     region: process.env.AWS_REGION,
